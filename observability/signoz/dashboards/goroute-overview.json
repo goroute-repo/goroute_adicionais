@@ -1,0 +1,242 @@
+{
+  "schemaVersion": "v6",
+  "name": "goroute-overview",
+  "tags": [
+    { "key": "team", "value": "goroute" },
+    { "key": "env", "value": "local" }
+  ],
+  "spec": {
+    "display": {
+      "name": "GoRoute - Overview",
+      "description": "RED por servico: rate, erros e latencia."
+    },
+    "duration": "1h",
+    "variables": [],
+    "datasources": {
+      "SigNozDatasource": {
+        "default": true,
+        "plugin": { "kind": "signoz/Datasource", "spec": {} }
+      }
+    },
+    "panels": {
+      "f1a2b3c4": {
+        "kind": "Panel",
+        "spec": {
+          "display": { "name": "Requisicoes/s por servico" },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "visualization": { "fillSpans": false },
+              "formatting": { "unit": "reqps", "decimalPrecision": "2" },
+              "legend": { "position": "bottom" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "aggregations": [
+                      {
+                        "metricName": "signoz_calls_total",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": {
+                      "expression": "service.name IN ['goroute-api', 'goroute-service-auth', 'goroute-frontend', 'goroute-platform-admin']"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "service.name",
+                        "fieldContext": "tag",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{service.name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "e5f6a7b8": {
+        "kind": "Panel",
+        "spec": {
+          "display": { "name": "Taxa de erro - goroute-api (%)" },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "formatting": { "unit": "percent", "decimalPrecision": "2" },
+              "legend": { "position": "bottom" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/CompositeQuery",
+                  "spec": {
+                    "queries": [
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "A",
+                          "signal": "traces",
+                          "stepInterval": 60,
+                          "disabled": true,
+                          "aggregations": [{ "expression": "count()" }],
+                          "filter": {
+                            "expression": "service.name = 'goroute-api' AND hasError = true"
+                          }
+                        }
+                      },
+                      {
+                        "type": "builder_query",
+                        "spec": {
+                          "name": "B",
+                          "signal": "traces",
+                          "stepInterval": 60,
+                          "disabled": true,
+                          "aggregations": [{ "expression": "count()" }],
+                          "filter": { "expression": "service.name = 'goroute-api'" }
+                        }
+                      },
+                      {
+                        "type": "builder_formula",
+                        "spec": {
+                          "name": "F1",
+                          "expression": "(A / B) * 100",
+                          "legend": "error %"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "c9d0e1f2": {
+        "kind": "Panel",
+        "spec": {
+          "display": { "name": "Latencia p99 - backends" },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "formatting": { "unit": "ns", "decimalPrecision": "0" },
+              "legend": { "position": "bottom" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "traces",
+                    "stepInterval": 60,
+                    "aggregations": [{ "expression": "p99(duration_nano)" }],
+                    "filter": {
+                      "expression": "service.name IN ['goroute-api', 'goroute-service-auth']"
+                    },
+                    "groupBy": [
+                      {
+                        "name": "service.name",
+                        "fieldContext": "resource",
+                        "fieldDataType": "string"
+                      }
+                    ],
+                    "legend": "{{service.name}}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "a3b4c5d6": {
+        "kind": "Panel",
+        "spec": {
+          "display": { "name": "Browser - goroute-frontend RPS" },
+          "plugin": {
+            "kind": "signoz/TimeSeriesPanel",
+            "spec": {
+              "formatting": { "unit": "reqps", "decimalPrecision": "2" }
+            }
+          },
+          "queries": [
+            {
+              "kind": "time_series",
+              "spec": {
+                "plugin": {
+                  "kind": "signoz/BuilderQuery",
+                  "spec": {
+                    "name": "A",
+                    "signal": "metrics",
+                    "aggregations": [
+                      {
+                        "metricName": "signoz_calls_total",
+                        "timeAggregation": "rate",
+                        "spaceAggregation": "sum",
+                        "reduceTo": "avg"
+                      }
+                    ],
+                    "filter": { "expression": "service.name = 'goroute-frontend'" }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 6,
+              "content": { "$ref": "#/spec/panels/f1a2b3c4" }
+            },
+            {
+              "x": 0,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": { "$ref": "#/spec/panels/e5f6a7b8" }
+            },
+            {
+              "x": 6,
+              "y": 6,
+              "width": 6,
+              "height": 6,
+              "content": { "$ref": "#/spec/panels/c9d0e1f2" }
+            },
+            {
+              "x": 0,
+              "y": 12,
+              "width": 12,
+              "height": 5,
+              "content": { "$ref": "#/spec/panels/a3b4c5d6" }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

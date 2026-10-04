@@ -1,0 +1,58 @@
+{
+  "name": "GoRoute — Traces com erro",
+  "sourcePage": "traces",
+  "extraData": "{\"color\":\"#E5484D\"}",
+  "compositeQuery": {
+    "queryType": "builder",
+    "panelType": "list",
+    "builderQueries": {
+      "A": {
+        "queryName": "A",
+        "stepInterval": 60,
+        "dataSource": "traces",
+        "aggregateOperator": "noop",
+        "aggregateAttribute": {
+          "key": "",
+          "dataType": "",
+          "type": "",
+          "isColumn": false
+        },
+        "filters": {
+          "op": "AND",
+          "items": [
+            {
+              "key": {
+                "key": "service.name",
+                "dataType": "string",
+                "type": "resource"
+              },
+              "op": "in",
+              "value": [
+                "goroute-api",
+                "goroute-service-auth",
+                "goroute-frontend",
+                "goroute-platform-admin"
+              ]
+            },
+            {
+              "key": {
+                "key": "hasError",
+                "dataType": "bool",
+                "type": "tag"
+              },
+              "op": "=",
+              "value": true
+            }
+          ]
+        },
+        "expression": "A",
+        "disabled": false,
+        "orderBy": [{ "columnName": "timestamp", "order": "desc" }],
+        "limit": 100,
+        "offset": 0,
+        "pageSize": 0,
+        "reduceTo": "avg"
+      }
+    }
+  }
+}

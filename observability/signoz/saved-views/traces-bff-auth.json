@@ -1,0 +1,44 @@
+{
+  "name": "GoRoute — Traces BFF → Auth",
+  "sourcePage": "traces",
+  "extraData": "{\"color\":\"#0090FF\"}",
+  "compositeQuery": {
+    "queryType": "builder",
+    "panelType": "list",
+    "builderQueries": {
+      "A": {
+        "queryName": "A",
+        "stepInterval": 60,
+        "dataSource": "traces",
+        "aggregateOperator": "noop",
+        "aggregateAttribute": {
+          "key": "",
+          "dataType": "",
+          "type": "",
+          "isColumn": false
+        },
+        "filters": {
+          "op": "AND",
+          "items": [
+            {
+              "key": {
+                "key": "service.name",
+                "dataType": "string",
+                "type": "resource"
+              },
+              "op": "in",
+              "value": ["goroute-api", "goroute-service-auth"]
+            }
+          ]
+        },
+        "expression": "A",
+        "disabled": false,
+        "orderBy": [{ "columnName": "timestamp", "order": "desc" }],
+        "limit": 100,
+        "offset": 0,
+        "pageSize": 0,
+        "reduceTo": "avg"
+      }
+    }
+  }
+}

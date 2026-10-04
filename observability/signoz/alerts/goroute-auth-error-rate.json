@@ -1,0 +1,74 @@
+{
+  "alert": "GoRoute Auth — taxa de erro acima de 0,5%",
+  "alertType": "TRACES_BASED_ALERT",
+  "description": "Taxa de spans com erro no goroute-service-auth",
+  "ruleType": "threshold_rule",
+  "version": "v5",
+  "schemaVersion": "v2alpha1",
+  "condition": {
+    "compositeQuery": {
+      "queryType": "builder",
+      "panelType": "graph",
+      "unit": "percent",
+      "queries": [
+        {
+          "type": "builder_query",
+          "spec": {
+            "name": "A",
+            "signal": "traces",
+            "stepInterval": 60,
+            "disabled": true,
+            "aggregations": [{ "expression": "count()" }],
+            "filter": {
+              "expression": "service.name = 'goroute-service-auth' AND hasError = true"
+            }
+          }
+        },
+        {
+          "type": "builder_query",
+          "spec": {
+            "name": "B",
+            "signal": "traces",
+            "stepInterval": 60,
+            "disabled": true,
+            "aggregations": [{ "expression": "count()" }],
+            "filter": { "expression": "service.name = 'goroute-service-auth'" }
+          }
+        },
+        {
+          "type": "builder_formula",
+          "spec": {
+            "name": "F1",
+            "expression": "(A / B) * 100"
+          }
+        }
+      ]
+    },
+    "selectedQueryName": "F1",
+    "thresholds": {
+      "kind": "basic",
+      "spec": [
+        {
+          "name": "critical",
+          "op": "above",
+          "matchType": "at_least_once",
+          "target": 0.5,
+          "channels": ["__CHANNEL__"]
+        }
+      ]
+    }
+  },
+  "evaluation": {
+    "kind": "rolling",
+    "spec": { "evalWindow": "5m0s", "frequency": "1m0s" }
+  },
+  "notificationSettings": {
+    "groupBy": [],
+    "renotify": { "enabled": false, "interval": "30m", "alertStates": [] }
+  },
+  "labels": { "severity": "critical", "team": "goroute", "service": "goroute-service-auth" },
+  "annotations": {
+    "summary": "Taxa de erro do auth acima de {{$threshold}}%",
+    "description": "goroute-service-auth com {{$value}}% de spans com erro."
+  }
+}

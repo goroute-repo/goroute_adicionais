@@ -1,0 +1,53 @@
+{
+  "name": "GoRoute — Logs de erro (API)",
+  "sourcePage": "logs",
+  "extraData": "{\"color\":\"#F76B15\"}",
+  "compositeQuery": {
+    "queryType": "builder",
+    "panelType": "list",
+    "builderQueries": {
+      "A": {
+        "queryName": "A",
+        "stepInterval": 60,
+        "dataSource": "logs",
+        "aggregateOperator": "noop",
+        "aggregateAttribute": {
+          "key": "body",
+          "dataType": "string",
+          "type": "",
+          "isColumn": true
+        },
+        "filters": {
+          "op": "AND",
+          "items": [
+            {
+              "key": {
+                "key": "service.name",
+                "dataType": "string",
+                "type": "resource"
+              },
+              "op": "=",
+              "value": "goroute-api"
+            },
+            {
+              "key": {
+                "key": "severity_text",
+                "dataType": "string",
+                "type": ""
+              },
+              "op": "in",
+              "value": ["ERROR", "FATAL", "error", "fatal"]
+            }
+          ]
+        },
+        "expression": "A",
+        "disabled": false,
+        "orderBy": [{ "columnName": "timestamp", "order": "desc" }],
+        "limit": 100,
+        "offset": 0,
+        "pageSize": 0,
+        "reduceTo": "avg"
+      }
+    }
+  }
+}
